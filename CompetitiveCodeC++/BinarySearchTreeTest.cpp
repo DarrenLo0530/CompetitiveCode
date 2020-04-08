@@ -6,11 +6,10 @@ struct Node{
     Node* left = NULL;
     Node* right = NULL;
     int height = 1;
-    int uniqueLeft = 0, uniqueRight = 0, totalLeft = 0, totalRight = 0;
+    int totalLeft = 0, totalRight = 0;
     int appearances = 1;
 };
 
-typedef pair<Node*, bool> nb;
 Node* root = NULL;
 
 int getHeight(Node* node){
@@ -30,10 +29,7 @@ Node* rightRotation(Node* z){//Returns new root
     y->right = z;
 
     //Updating number of nodes on right and left
-    z->uniqueLeft = y->uniqueRight;
     z->totalLeft = y->totalRight;
-
-    y->uniqueRight = 1 + z->uniqueLeft + z->uniqueRight;
     y->totalRight = z->appearances + z->totalLeft + z->totalRight;
 
     //Updating heights of subtrees
@@ -49,10 +45,8 @@ Node* leftRotation(Node* z){//Returns new root
     y->left = z;
 
     //Updating number of nodes on right and left
-    z->uniqueRight = y->uniqueLeft;
     z->totalRight = y->totalLeft;
 
-    y->uniqueLeft = 1 + z->uniqueRight + z->uniqueLeft;
     y->totalLeft = z->appearances + z->totalRight + z->totalLeft;
 
     //Updating heights of subtrees    
@@ -62,33 +56,21 @@ Node* leftRotation(Node* z){//Returns new root
     return y;
 }
 
-nb insertUtil(Node* root, int val){//Returns pair of the root currently and if the inserted element was unique
-    bool isUnique = false;
-
+Node* insertUtil(Node* root, int val){//Returns pair of the root currently and if the inserted element was unique
     if(root == NULL){
         Node* n = new Node();
         n->key = val;
-        return nb{n, true};
+        return n;
         //Inserting node will not make same node imbalanced
     } else if(val > root->key){
         root->totalRight++;
-        nb ret = insertUtil(root->right, val);
-        root->right = ret.first;
-        if(ret.second){
-            root->uniqueRight++;
-        }
-        isUnique = ret.second;
+        root->right = insertUtil(root->right, val);
     } else if(val < root->key){
         root->totalLeft++;
-        nb ret = insertUtil(root->left, val);
-        root->left = ret.first;
-        if(ret.second){
-            root->uniqueLeft++;
-        }
-        isUnique = ret.second;
+        root->left = insertUtil(root->left, val);
     } else {
         root->appearances++;
-        return nb{root, false};
+        return root;
     }
 
     int rightHeight = getHeight(root->right);
@@ -97,23 +79,22 @@ nb insertUtil(Node* root, int val){//Returns pair of the root currently and if t
 
     int balanceFac = getBalance(root);
     if(balanceFac > 1 && val < root->left->key){//Val was inserted going left then left  (LL)
-        return nb{rightRotation(root), isUnique};
+        return rightRotation(root);
     } else if(balanceFac < -1 && val > root->right->key){//Val was inserted going right then right (RR)
-        return nb{leftRotation(root), isUnique};
+        return leftRotation(root);
     } else if(balanceFac > 1 && val > root->left->key){ //Val was inserted going left then right (LR)
         root->left = leftRotation(root->left);
-        return nb{rightRotation(root), isUnique};
+        return rightRotation(root);
     } else if(balanceFac < -1 && val < root->right->key){//Val was inserted right then left (RL)
         root->right = rightRotation(root->right);
-        return nb{leftRotation(root), isUnique};
+        return leftRotation(root);
     }
 
-    return nb{root, isUnique};
+    return root;
 }
 
-
 void insert(int val){
-    root = insertUtil(root, val).first;
+    root = insertUtil(root, val);
 }
 
 Node* minNode(Node* root){
@@ -124,31 +105,25 @@ Node* minNode(Node* root){
     return minNode(root->left);
 }
 
-nb deleteUtil(Node* root, int val){//Returns pair of current node and whether or not the last node was deleted
-    bool isUnique = false;
-
+bool wasDeleted;
+Node* deleteUtil(Node* root, int val){//Returns pair of current node and whether or not the last node was deleted
     if(root == NULL){
-        return {NULL, false};
+        wasDeleted = false;
+        return NULL;
     } else if(val > root->key){
-        root->totalRight--;
-        nb ret = deleteUtil(root-> right, val);
-        root->right = ret.first;
-        isUnique = ret.second;
-        if(ret.second){
-            root->uniqueRight--;
+        root->right = deleteUtil(root-> right, val);
+        if(wasDeleted){
+            root->totalRight--;
         }
     } else if(val < root->key){
-        root->totalLeft--;
-        nb ret = deleteUtil(root->left, val);
-        root->left = ret.first;
-        isUnique = ret.second;
-        if(ret.second){
-            root->uniqueLeft--;
+        root->left = deleteUtil(root->left, val);
+        if(wasDeleted){
+            root->totalLeft--;
         }
     } else {
+        wasDeleted = true;
         root->appearances--;
         if(root->appearances == 0){//Node actually deleted
-            isUnique = true;
             if(root->left == NULL && root->right == NULL){ //No child
                 root = NULL;
                 free(root);
@@ -165,19 +140,18 @@ nb deleteUtil(Node* root, int val){//Returns pair of current node and whether or
                 root->key = inOrderSuccesor->key;
                 root->appearances = inOrderSuccesor->appearances;
                 root->totalRight -= inOrderSuccesor->appearances;
-                root->uniqueRight--;
 
                 inOrderSuccesor->appearances = 1;
 
-                root->right = deleteUtil(root->right, inOrderSuccesor->key).first;
+                root->right = deleteUtil(root->right, inOrderSuccesor->key);
             }
         } else {
-            return nb{root, false};
+            return root;
         }
     }
 
     if(root == NULL){
-        return {NULL, isUnique};
+        return NULL;
     }
 
     int rightHeight = getHeight(root->right);
@@ -187,29 +161,29 @@ nb deleteUtil(Node* root, int val){//Returns pair of current node and whether or
     int balanceFac = getBalance(root);
 
     if(balanceFac > 1 && getBalance(root->left) >= 0){//Left left
-        return {rightRotation(root), isUnique};
+        return rightRotation(root);
     } else if(balanceFac < -1 && getBalance(root->right) < 0){//Right right
-        return {leftRotation(root), isUnique};
+        return leftRotation(root);
     } else if(balanceFac > 1 && getBalance(root->left) < 0){//Left right
         root->left = leftRotation(root->left);
-        return {rightRotation(root), isUnique};
+        return rightRotation(root);
     } else if(balanceFac < -1 && getBalance(root->right)>=0){//Right left
         root->right = rightRotation(root->right);
-        return {leftRotation(root), isUnique};
+        return leftRotation(root);
     }
 
-    return nb{root, isUnique};
+    return root;
 }
 
 void del(int val){
-    root = deleteUtil(root, val).first;
+    root = deleteUtil(root, val);
 }
 
 int nSmallest(Node* root, int n){
-    if(n == root->uniqueLeft + 1){
+    if(n >= root->totalLeft + 1 && n<= root->totalLeft + root->appearances){
         return root->key;
-    } else if(n > root->uniqueLeft + 1){
-        return nSmallest(root->right, n-(root->uniqueLeft+1));
+    } else if(n > root->totalLeft + root->appearances){
+        return nSmallest(root->right, n-(root->totalLeft+ root->appearances));
     } else {
         return nSmallest(root->left, n);
     }
@@ -236,9 +210,10 @@ void output(Node* root){
         output(root->left);
     }
 
-    //for(int i = 0; i<root->appearances; i++){
-        printf("%d %d %d %d %d %d\n", root->key, root->appearances, root->totalLeft, root->totalRight, root->uniqueLeft, root->uniqueRight);
-    //}
+    for(int i = 0; i<root->appearances; i++){
+        printf("%d ", root->key);
+    }
+    //printf("%d %d %d %d\n", root->key, root->appearances, root->totalLeft, root->totalRight);
 
     if(root->right != NULL){
         output(root->right);
@@ -261,20 +236,22 @@ int main(){
         scanf(" %c %d", &o, &a);
         a = a^prevAns;
         if(o == 'S'){
-            cout<<a;
             prevAns = nSmallest(root, a);
             printf("%d\n", prevAns);
         } else if(o == 'I'){
             insert(a);
-            output(root);
-
+            //output(root);
         } else if(o == 'R'){
             del(a);
+            //output(root);
+
         } else {
             prevAns = firstOccur(root, a, 1);
             printf("%d\n", prevAns);
         }
     }
+
+    output(root);
 
 
 }
