@@ -46,7 +46,6 @@ Node* leftRotation(Node* z){//Returns new root
 
     //Updating number of nodes on right and left
     z->totalRight = y->totalLeft;
-
     y->totalLeft = z->appearances + z->totalRight + z->totalLeft;
 
     //Updating heights of subtrees    
@@ -206,17 +205,19 @@ int firstOccur(Node* root, int v, int numLessThan){
 }
 
 void output(Node* root){
-    if(root->left != NULL){
-        output(root->left);
-    }
+    if(root != NULL){
+        if(root->left != NULL){
+            output(root->left);
+        }
 
-    for(int i = 0; i<root->appearances; i++){
-        printf("%d ", root->key);
-    }
-    //printf("%d %d %d %d\n", root->key, root->appearances, root->totalLeft, root->totalRight);
+        for(int i = 0; i<root->appearances; i++){
+            printf("%d ", root->key);
+        }
+        //printf("%d %d %d %d\n", root->key, root->appearances, root->totalLeft, root->totalRight);
 
-    if(root->right != NULL){
-        output(root->right);
+        if(root->right != NULL){
+            output(root->right);
+        }
     }
 }
 
@@ -231,7 +232,6 @@ int main(){
         insert(a);
     }
 
-
     for(int i = 0; i<M; i++){
         scanf(" %c %d", &o, &a);
         a = a^prevAns;
@@ -244,7 +244,6 @@ int main(){
         } else if(o == 'R'){
             del(a);
             //output(root);
-
         } else {
             prevAns = firstOccur(root, a, 1);
             printf("%d\n", prevAns);
@@ -252,6 +251,4 @@ int main(){
     }
 
     output(root);
-
-
 }
