@@ -1,4 +1,0 @@
-# CompetitiveCode
- CCC stuffs
-
-#YAY
