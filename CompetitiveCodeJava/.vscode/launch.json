@@ -2,6 +2,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - CCC09S4",
+            "request": "launch",
+            "mainClass": "CCC09S4",
+            "projectName": "CCC"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - CCC09J5",
+            "request": "launch",
+            "mainClass": "CCC09J5",
+            "projectName": "CCC"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - CCC05J5test",
             "request": "launch",
             "mainClass": "CCC05J5test",
