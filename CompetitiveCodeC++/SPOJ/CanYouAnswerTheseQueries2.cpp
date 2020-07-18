@@ -24,7 +24,7 @@ void propogate(int l, int r, int index){
     }
 
     for(int i = index*2; i<=index*2+1; i++){
-        //Lets say you have list [1, 2, 5, 3, -2, -6[i] ...]
+        //Lets say you have list [1, 2, 5, 3, -2, -6(i) ...]
         //You've range updated up to -6 or index i
         //for range(1 to 2), lazy would be [5, 3, -2, -6] assuming we do not propogate
         //bestLazy is the largest prefix of the lazy which is [5, 3] which when propogating is used to get our glob maxsum
